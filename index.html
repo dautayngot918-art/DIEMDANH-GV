@@ -469,6 +469,36 @@ tr.pickrow:hover td{background:var(--accent-soft)}
 @keyframes flashp{0%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 55%,transparent)}100%{box-shadow:var(--shadow)}}
 .panel.flash{animation:flashp 1.4s ease-out}
 
+/* chụp ảnh khuôn mặt */
+.cam{width:min(300px,100%)}
+.shutter{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:62px;height:62px;border-radius:50%;border:4px solid #fff;background:rgba(255,255,255,.35);box-shadow:0 2px 12px rgba(0,0,0,.4);cursor:pointer;padding:0}
+.shutter::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.shutter:active::after{inset:8px}
+.shutter[hidden]{display:none}
+.camrow{justify-content:center}
+/* dãy ô theo dõi mã */
+.seqcells{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:6px}
+.seqcells .cell{height:34px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:var(--surface-2,#efedf6);color:var(--muted);border:1px solid var(--line);transition:background .2s,color .2s,transform .2s}
+.seqcells .cell.ok{background:var(--ok);border-color:var(--ok);color:#fff;transform:scale(1.06)}
+.seqcells .cell.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.seqlegend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--muted)}
+.seqlegend span{display:inline-flex;align-items:center;gap:5px}
+.seqlegend i{width:12px;height:12px;border-radius:3px;background:var(--surface-2,#efedf6);border:1px solid var(--line)}
+.seqlegend i.ok{background:var(--ok);border-color:var(--ok)}.seqlegend i.bad{background:var(--bad);border-color:var(--bad)}
+/* hộp báo kết quả */
+.resmodal{position:fixed;inset:0;z-index:60;background:rgba(20,10,40,.55);display:grid;place-items:center;padding:20px}
+.resmodal[hidden]{display:none}
+.resbox{background:var(--surface);border-radius:20px;padding:26px 22px 20px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 20px 60px rgba(0,0,0,.35);border-top:8px solid var(--line)}
+.resbox h3{margin:0;font-size:1.35rem}
+.resbox p{margin:0}
+.resic{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;font-weight:800;color:#fff;background:var(--muted)}
+.resbox.ok{border-top-color:var(--ok)}.resbox.ok .resic{background:var(--ok)}.resbox.ok h3{color:var(--ok)}
+.resbox.bad{border-top-color:var(--bad)}.resbox.bad .resic{background:var(--bad)}.resbox.bad h3{color:var(--bad)}
+.resbox.warn{border-top-color:var(--warn)}.resbox.warn .resic{background:var(--warn)}.resbox.warn h3{color:var(--warn)}
+.resbox.wait .resic{background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.9);opacity:.7}}
+.resbox .btn{align-self:stretch}
+
 </style>
 </head>
 <body>
@@ -821,10 +851,10 @@ tr.pickrow:hover td{background:var(--accent-soft)}
         <button class="btn" id="btnMyIp">Lấy IP mạng hiện tại</button>
       </div>
       <label class="check"><input type="checkbox" id="rReqSelfie" checked> Bắt buộc chụp ảnh khuôn mặt trực tiếp khi điểm danh</label>
-      <label>Cách sinh viên nhập mã
+      <label hidden>Cách sinh viên nhập mã
         <select id="rScan"><option value="any">Quét QR bằng camera điện thoại hoặc gõ 6 số</option><option value="live">Chỉ quét trực tiếp bằng camera trong trang điểm danh (chặn quét từ ảnh)</option></select>
       </label>
-      <p class="hint" id="rScanHint" style="margin-top:-6px">Chế độ "chỉ quét trực tiếp": mã QR trên máy chiếu không còn là đường link, camera thường hay Zalo quét ra cũng không dùng được; sinh viên phải mở trang điểm danh và bấm Quét mã. Trang không cho chọn ảnh có sẵn, không cho gõ số, và phải thấy mã đổi ít nhất một lần (2 mã liên tiếp) nên ảnh chụp màn hình hay ảnh gửi qua mạng đều bị chặn. Lượt gửi phải tới máy giảng viên trong 9 giây kể từ lúc mã hiện, nên video quay rồi gửi qua Zalo cũng không kịp.</p>
+      <p class="hint" id="rScanHint" style="margin-top:-6px">Sinh viên chỉ điểm danh bằng cách quét QR trực tiếp trong trang điểm danh (không gõ số). QR không phải đường link nên camera thường hay Zalo quét ra cũng không dùng được.</p>
       <div class="row">
         <label style="flex:1 1 200px">Mỗi mã hiện trong
           <select id="rCodeSec"><option value="3">3 giây</option><option value="5">5 giây (mặc định)</option><option value="10">10 giây</option><option value="15">15 giây</option><option value="20">20 giây</option><option value="30">30 giây</option></select></label>
@@ -3229,7 +3259,7 @@ const Store = {
   async init(){
     if(SHEET_URL){
       this.sheet=SHEET_URL;
-      try{ const r=await this._call({op:"get",paths:[]}); if(r.error) throw r; this.live=true; this._poll();
+      try{ const r=await this._call({op:"get",paths:[],since:[]}); if(r.error) throw r; if(!Array.isArray(r.res)){ this.err="old"; return "error"; } this.live=true; this._poll();
         addEventListener("beforeunload",e=>{ if(this.queue.length||this.flushing){ e.preventDefault(); e.returnValue=""; } });   // còn dữ liệu chưa lưu lên Sheet
         return "live"; }
       catch(e){ return "error"; }
@@ -3254,15 +3284,25 @@ const Store = {
       q.forEach(x=>err?x.rej({code:"net",message:"Không lưu được lên Google Sheet"}):x.res()); })().finally(()=>{ this.flushing=null; });
     return this.flushing; },
   async _poll(){ for(;;){ await new Promise(r=>setTimeout(r,document.hidden?this.pollMs*3:this.pollMs)); try{ await this._refresh(); }catch(e){} } },
-  async _refresh(force){ if(this.queue.length||this.flushing) return; const subs=this.subs.slice(); if(!subs.length) return;
-    const r=await this._call({op:"get",paths:subs.map(s=>s.path),ifVer:force?null:this.ver});
-    if(r.same||this.queue.length||this.flushing) return; this.ver=r.ver; subs.forEach((s,i)=>{ s.val=r.vals[i]; this._fire(s); }); },
+  async _refresh(){ if(this.queue.length||this.flushing) return; const subs=this.subs.filter(s=>s.ready); if(!subs.length) return;
+    const r=await this._call({op:"get",paths:subs.map(s=>s.path),since:subs.map(s=>s.since),ifVer:subs.every(s=>s.since!=null)?this.ver:null});
+    if(r.same||this.queue.length||this.flushing) return; this.ver=r.ver; subs.forEach((s,i)=>{ this._merge(s,r.res[i],r.ver); this._fire(s); }); },
+  /* ghép kết quả từ Sheet: keys = mọi dòng của nhánh, rows = các dòng mới đổi */
+  _merge(s,res,ver){ if(!s.rows) s.rows={}; const keep={}; res.keys.forEach(k=>{ keep[k]=1; }); for(const k in s.rows) if(!keep[k]) delete s.rows[k];
+    for(const k in res.rows) s.rows[k]=res.rows[k]; s.since=ver; s.val=this._asm(s.rows,s.path); },
+  _asm(rows,path){ const ps=ddSegs(path); let tree=null;
+    for(const k in rows){ const ks=ddSegs(k); if(ks.length<ps.length) { tree=ddSetIn(tree,ks,rows[k]); continue; } if(!tree||typeof tree!=="object") tree={}; let o=tree; for(let i=0;i<ks.length-1;i++){ if(!o[ks[i]]||typeof o[ks[i]]!=="object") o[ks[i]]={}; o=o[ks[i]]; } o[ks.at(-1)]=rows[k]; }
+    return ddClone(ddGetIn(tree,ps)); },
   _tree(){ return readJSON("dd-db",{}); },
   _get(tree,path){ return path.split("/").reduce((o,k)=>o==null?null:(o[k]??null),tree); },
   _emit(){ const t=this._tree(); this.subs.forEach(s=>{ const v=this._get(t,s.path); const j=JSON.stringify(v); if(j!==s.last){s.last=j;s.cb(v);} }); },
   watch(path, cb){
-    if(this.live){ const s={path,cb,last:undefined,val:null}; this.subs.push(s);
-      (async()=>{ try{ await this._flush(); const r=await this._call({op:"get",paths:[path]}); if(this.subs.includes(s)&&!this.queue.length){ s.val=r.vals[0]; } }catch(e){} if(this.subs.includes(s)) this._fire(s); })();
+    if(this.live){ const s={path,cb,last:undefined,val:null,rows:null,since:null,ready:false}; this.subs.push(s);
+      (async()=>{ for(let i=0;i<20&&this.subs.includes(s);i++){   // lấy lần đầu; nếu đang có lệnh ghi chờ gửi thì gửi xong rồi lấy lại
+          try{ await this._flush(); const r=await this._call({op:"get",paths:[path],since:[null]}); if(!this.subs.includes(s)) return;
+            if(!this.queue.length&&!this.flushing){ this._merge(s,r.res[0],r.ver); s.ready=true; this._fire(s); return; } }
+          catch(e){ await new Promise(r=>setTimeout(r,1500)); } }
+        s.ready=true; })();
       return ()=>{ this.subs=this.subs.filter(x=>x!==s); }; }
     const s={path,cb,last:undefined}; this.subs.push(s); this._emit(); return ()=>{this.subs=this.subs.filter(x=>x!==s)};
   },
@@ -3273,7 +3313,7 @@ const Store = {
     try{ localStorage.setItem("dd-db",JSON.stringify(t)); }catch(e){ throw {code:"quota",message:"Bộ nhớ trình duyệt đầy"}; }
     this.bc?.postMessage(1); this._emit();
   },
-  async get(path){ if(this.live){ await this._flush(); return (await this._call({op:"get",paths:[path]})).vals[0]; } return this._get(this._tree(),path); }
+  async get(path){ if(this.live){ await this._flush(); const r=await this._call({op:"get",paths:[path],since:[null]}); return this._asm(r.res[0].rows,path); } return this._get(this._tree(),path); }
 };
 
 </script>
@@ -3563,7 +3603,7 @@ async function exportEdited(fmt){
 /* ===================== TRANG GIẢNG VIÊN ===================== */
 const STUDENT_PAGE = "sinh-vien.html";   // tên file trang sinh viên, đặt cùng thư mục
 const SAMPLE = [["2251010001","Nguyễn Văn An"],["2251010002","Trần Thị Bích"],["2251010003","Lê Hoàng Cường"],["2251010004","Phạm Minh Duy"],["2251010005","Võ Thị Hạnh"],["2251010006","Đặng Quốc Huy"],["2251010007","Bùi Ngọc Lan"],["2251010008","Huỳnh Tấn Phát"]];
-const DEFAULT_ROOM = {lat:null,lng:null,radius:30,maxAcc:40,reqIp:false,ips:[],reqSelfie:true,gpsPolicy:"reject",acceptSec:20,scanMode:"any",codeSec:5,qrCount:1,codeCount:10};
+const DEFAULT_ROOM = {lat:null,lng:null,radius:30,maxAcc:40,reqIp:false,ips:[],reqSelfie:true,gpsPolicy:"reject",acceptSec:20,scanMode:"live",codeSec:5,qrCount:1,codeCount:10};
 
 let classes = readJSON("dd-classes", null);
 if(!classes){ classes = {demo:{name:"Lập trình Web · CTK45 (mẫu)", roster:SAMPLE.map(([mssv,name])=>({mssv,name})), room:{...DEFAULT_ROOM}}}; }
@@ -3820,7 +3860,7 @@ $("btnOpen").addEventListener("click",async()=>{
   $("btnOpen").disabled=true; $("openInfo").textContent="Đang lấy vị trí máy giảng viên…";
   const center=await teacherCenter(c); $("btnOpen").disabled=false;
   if(center.error){ $("openInfo").textContent=center.error; return; }
-  const t0=Date.now(); const d={open:true,id:rid(6),classId:id,className:c.name,startedAt:t0,t0,seqOff:0,...meta,room:{...DEFAULT_ROOM,...c.room,...center},roster};
+  const t0=Date.now(); const d={open:true,id:rid(6),classId:id,className:c.name,startedAt:t0,t0,seqOff:0,...meta,room:{...DEFAULT_ROOM,...c.room,...center,scanMode:"live"},roster};
   rejects=[]; seenBad={}; firstSeen={};
   try{ await Store.set("session",d); await Store.set("history/"+d.id,{classId:id,className:c.name,startedAt:d.startedAt,subject:d.subject,kind:d.kind,kindLabel:d.kindLabel,at:d.at,timeMode:d.timeMode,roster}); }catch(e){ $("openInfo").textContent="Không mở được: "+(e.message||e.code||e); }
 });
@@ -3828,11 +3868,11 @@ async function teacherCenter(c){ // tâm khoảng cách = vị trí máy giảng
   const p=await getPosition();
   if(!p.error) return {lat:p.lat,lng:p.lng,centerAcc:Math.round(p.acc),centerSrc:"máy giảng viên",centerAt:Date.now()};
   if(c.room&&c.room.lat!=null) return {lat:c.room.lat,lng:c.room.lng,centerAcc:null,centerSrc:"toạ độ dự phòng",centerAt:Date.now()};
-  return {error:p.error+" trên máy giảng viên. Bật quyền vị trí cho trình duyệt rồi bấm lại, hoặc nhập toạ độ dự phòng trong tab Lớp học & phòng học."};
+  return {lat:null,lng:null,centerAcc:null,centerSrc:"chưa có",centerAt:Date.now(),centerErr:p.error};   // vẫn mở được, tạm bỏ kiểm tra GPS
 }
 $("btnRecenter").addEventListener("click",async()=>{ if(!session||!session.open) return; $("btnRecenter").disabled=true; const ctr=await teacherCenter(classes[session.classId]||{}); $("btnRecenter").disabled=false;
   if(ctr.error){ $("openInfo").textContent=ctr.error; return; } await Store.set("session",{...session,room:{...session.room,...ctr}}); });
-function centerInfo(s){ const r=s.room; let t="Tâm: "+(r.centerSrc||"máy giảng viên")+(r.centerAcc!=null?" (sai số ±"+r.centerAcc+" m)":"")+" · bán kính "+r.radius+" m";
+function centerInfo(s){ const r=s.room; if(r.lat==null) return "Chưa lấy được vị trí máy giảng viên ("+(r.centerErr||"không rõ lý do")+") nên tạm không kiểm tra GPS. Bật quyền vị trí rồi bấm Cập nhật vị trí."; let t="Tâm: "+(r.centerSrc||"máy giảng viên")+(r.centerAcc!=null?" (sai số ±"+r.centerAcc+" m)":"")+" · bán kính "+r.radius+" m";
   if(r.centerAcc!=null && r.centerAcc>r.radius) t+=". Lưu ý: vị trí máy giảng viên kém chính xác hơn bán kính, nên bấm Cập nhật vị trí hoặc mở trên điện thoại có GPS."; return t; }
 $("btnClose").addEventListener("click",async()=>{ if(session){ const t=Date.now(); await Store.set("session",{...session,open:false,closedAt:t}); await Store.set("history/"+session.id+"/closedAt",t).catch(()=>{}); fillMeta(); } });
 $("btnFull").addEventListener("click",()=>{ $("board").requestFullscreen?.().catch(()=>{}); });
@@ -3858,7 +3898,7 @@ function renderBoard(){
   if(box.dataset.k!==key){
     box.dataset.k=key; $("code").textContent=code.slice(0,3)+" "+code.slice(3);
     // chế độ chỉ quét trực tiếp: QR chứa mã thô (không phải link), chỉ trang điểm danh đọc được
-    let svg=""; try{ const qr=qrcode(0,"M"); qr.addData(live?"DD1:"+session.id+":"+code:studentURL(code)); qr.make(); svg=qr.createSvgTag({cellSize:6,margin:0,scalable:true}); }catch(e){ svg='<span style="color:#000">Không tạo được QR, dùng mã số.</span>'; }
+    let svg=""; try{ const qr=qrcode(0,"M"); qr.addData(live?"DD1:"+session.id+":"+code+":"+idx:studentURL(code)); qr.make(); svg=qr.createSvgTag({cellSize:6,margin:0,scalable:true}); }catch(e){ svg='<span style="color:#000">Không tạo được QR, dùng mã số.</span>'; }
     box.className="qrgrid n"+n; box.innerHTML="";
     for(let i=0;i<n;i++){ const q=document.createElement("div"); q.className="qrbox"; q.innerHTML=svg; const b=document.createElement("span"); b.className="qrsec"; b.setAttribute("aria-label","giây còn lại"); q.appendChild(b); box.appendChild(q); }
   }
@@ -4103,7 +4143,8 @@ let unCheckins=null;
   // lần đầu nối Google Sheet: đưa dữ liệu đang có trên máy này (kể cả dữ liệu mẫu) lên kho chung
   let seedDemo=false;
   if(mode==="live"){ try{
-    const [rc,ra,rh]=(await Store._call({op:"get",paths:["classes","accounts","history"]})).vals;
+    const kc=(await Store._call({op:"get",paths:["classes","accounts","history"],since:[1e15,1e15,1e15]})).res.map(x=>x.keys.length);   // chỉ hỏi có dữ liệu chưa
+    const rc=kc[0]?await Store.get("classes"):null, ra=kc[1], rh=kc[2];
     if(!rc&&!ra&&!rh){ const local=readJSON("dd-db",{});
       if(Object.keys(local).length){ for(const k of Object.keys(local)) Store.set(k,local[k]); saveClasses(); await Store._flush(); }
       else seedDemo=true; }
@@ -4111,7 +4152,7 @@ let unCheckins=null;
     else saveClasses();
   }catch(e){} }
   storeReadyRes(mode);
-  $("mode").textContent = mode==="live"?"Đang chạy thật · đồng bộ Google Sheet":mode==="error"?"Lỗi kết nối Google Sheet · kiểm tra địa chỉ":"Chế độ thử · chỉ trên máy này";
+  $("mode").textContent = mode==="live"?"Đang chạy thật · đồng bộ Google Sheet":mode==="error"?(Store.err==="old"?"Mã Apps Script là bản cũ · cần cập nhật":"Lỗi kết nối Google Sheet · kiểm tra địa chỉ"):"Chế độ thử · chỉ trên máy này";
   if(mode==="live") $("mode").classList.add("live");
   Store.watch("devices",v=>{ devices=v||{}; renderRoster(); });
   Store.watch("settings",v=>{ settings=v||{}; fillSettings(); });
