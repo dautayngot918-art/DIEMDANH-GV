@@ -499,6 +499,36 @@ tr.pickrow:hover td{background:var(--accent-soft)}
 @keyframes pulse{50%{transform:scale(.9);opacity:.7}}
 .resbox .btn{align-self:stretch}
 
+.camcount{position:absolute;inset:0;display:grid;place-items:center;font-size:5rem;font-weight:800;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none}
+.camcount[hidden]{display:none}
+
+/* ảnh khuôn mặt: ô vuông trắng + camera toàn màn hình */
+.selfierow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.selfiebox{width:120px;height:120px;flex:none;border-radius:14px;border:2px dashed var(--line);background:#fff;padding:0;overflow:hidden;cursor:pointer;display:grid;place-items:center;color:var(--muted);font:inherit;font-size:.85rem;line-height:1.3}
+.selfiebox img{width:100%;height:100%;object-fit:cover;display:block}
+.selfiebox:has(img:not([hidden])){border:2px solid var(--ok)}
+.selfiebtns{display:flex;flex-direction:column;gap:8px;flex:1 1 140px}
+body.noscroll{overflow:hidden}
+.camfull{position:fixed;inset:0;z-index:70;background:#000;display:flex;align-items:center;justify-content:center}
+.camfull[hidden]{display:none}
+.camfull video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.camframe{position:absolute;left:50%;top:44%;width:min(72vw,360px);aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:24px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);pointer-events:none}
+.camtip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 64px);left:16px;right:16px;text-align:center;color:#fff;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.camx{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:1.3rem;cursor:pointer}
+.camfull .shutter{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);transform:translateX(-50%);width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:transparent;box-shadow:0 2px 14px rgba(0,0,0,.5);cursor:pointer;padding:0}
+.camfull .shutter::after{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff;transition:inset .1s}
+.camfull .shutter:active::after{inset:10px}
+.camfull.view{flex-direction:column;gap:16px;padding:70px 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.camfull.view img{max-width:100%;max-height:calc(100% - 80px);border-radius:14px;object-fit:contain}
+.picbar{display:flex;gap:10px;width:min(420px,100%)}.picbar .btn{flex:1}
+.av img{cursor:zoom-in}
+.picov{position:fixed;inset:0;z-index:80;background:rgba(10,4,30,.8);display:grid;place-items:center;padding:20px;cursor:zoom-out}
+.picov[hidden]{display:none}
+.picov figure{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center}
+.picov img{width:min(420px,88vw);height:auto;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#fff}
+.picov figcaption{color:#fff;font-weight:600;text-align:center}
+.picov button{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:1.3rem;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -4030,7 +4060,7 @@ function renderRoster(){
     const nb=document.createElement("span"); nb.className="no"; nb.textContent=no; el.appendChild(nb);
     const sn=document.createElement("span"); sn.className="sn"; sn.textContent=s.name.split(" ").pop()||""; 
     const av=document.createElement("span"); av.className="av";
-    const pic=r&&(r.selfie||checkins[s.k]?.selfie); if(pic&&state!=="absent"){ const im=document.createElement("img"); im.src=pic; im.alt=""; av.appendChild(im); } else av.textContent=(s.name.split(" ").pop()||"?").slice(0,2).toUpperCase();
+    const pic=r&&(r.selfie||checkins[s.k]?.selfie); if(pic&&state!=="absent"){ const im=document.createElement("img"); im.src=pic; im.alt=s.name+" · "+s.mssv; av.appendChild(im); } else av.textContent=(s.name.split(" ").pop()||"?").slice(0,2).toUpperCase();
     const reg=devices[s.k]; if(state==="review"&&reg&&reg.selfie){ const av2=document.createElement("span"); av2.className="av reg"; av2.title="Ảnh đăng ký lần đầu"; const im2=document.createElement("img"); im2.src=reg.selfie; im2.alt="Ảnh đăng ký"; av2.appendChild(im2); el.append(av); av.after(av2); }
     const tx=document.createElement("span"); tx.className="tx";
     const nm=document.createElement("span"); nm.className="nm"; nm.textContent=s.name;
@@ -4172,6 +4202,10 @@ let unCheckins=null;
   if(seedDemo) setTimeout(async()=>{ try{ await makeDemoAll(); await Store._flush(); }catch(e){ console.error(e); } },300);
   setInterval(renderBoard,200);
 })();
+/* bấm ảnh khuôn mặt sinh viên để xem lớn */
+document.addEventListener("click",e=>{ const im=e.target.closest(".av img, img.selfie"); if(!im) return; e.preventDefault(); e.stopPropagation();
+  let ov=$("picOv"); if(!ov){ ov=document.createElement("div"); ov.id="picOv"; ov.className="picov"; ov.innerHTML='<figure><img alt="Ảnh khuôn mặt"><figcaption></figcaption></figure><button type="button" aria-label="Đóng">✕</button>'; document.body.appendChild(ov); ov.addEventListener("click",()=>{ ov.hidden=true; }); }
+  ov.querySelector("img").src=im.src; ov.querySelector("figcaption").textContent=im.alt||im.closest("[title]")?.title||""; ov.hidden=false; },true);
 
 /* ===================== THEO DÕI & BÁO CÁO ===================== */
 let hist={}, allResults={}, rpCfg=readJSON("dd-rpcfg",{school:"",faculty:"",teacher:"",late:15,limit:20});
