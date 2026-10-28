@@ -486,7 +486,7 @@ tr.pickrow:hover td{background:var(--accent-soft)}
 .seqlegend i{width:12px;height:12px;border-radius:3px;background:var(--surface-2,#efedf6);border:1px solid var(--line)}
 .seqlegend i.ok{background:var(--ok);border-color:var(--ok)}.seqlegend i.bad{background:var(--bad);border-color:var(--bad)}
 /* hộp báo kết quả */
-.resmodal{position:fixed;inset:0;z-index:60;background:rgba(20,10,40,.55);display:grid;place-items:center;padding:20px}
+.resmodal{position:fixed;inset:0;z-index:90;background:rgba(20,10,40,.55);display:grid;place-items:center;padding:20px}
 .resmodal[hidden]{display:none}
 .resbox{background:var(--surface);border-radius:20px;padding:26px 22px 20px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 20px 60px rgba(0,0,0,.35);border-top:8px solid var(--line)}
 .resbox h3{margin:0;font-size:1.35rem}
@@ -528,6 +528,70 @@ body.noscroll{overflow:hidden}
 .picov img{width:min(420px,88vw);height:auto;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#fff}
 .picov figcaption{color:#fff;font-weight:600;text-align:center}
 .picov button{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:1.3rem;cursor:pointer}
+
+/* màn hình quét toàn màn hình, dãy ô ở dưới */
+.scanfull video{transform:none}
+.scanframe{position:absolute;left:50%;top:42%;width:min(70vw,340px);aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.95);border-radius:20px;box-shadow:0 0 0 9999px rgba(0,0,0,.4);pointer-events:none}
+.scantop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 66px);left:16px;right:16px;text-align:center;color:#fff;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.scanbottom{position:absolute;left:0;right:0;bottom:0;padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 16px);background:linear-gradient(transparent,rgba(0,0,0,.75) 30%);display:flex;flex-direction:column;gap:8px}
+.scanbottom[hidden]{display:none}
+.scanbottom .seqcells{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
+.scanbottom .seqcells .cell{height:38px;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35)}
+.scanbottom .seqcells .cell.ok{background:var(--ok);border-color:#fff}
+.scanbottom .seqcells .cell.bad{background:var(--bad);border-color:var(--bad)}
+.scanbottom .seqlegend{color:rgba(255,255,255,.85);justify-content:center}
+/* ---------- điểm danh kiểu câu hỏi ---------- */
+.qz{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+.qz .g{color:#5fe08a}
+.qzlobby{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.qzlbl{font-size:1rem;opacity:.9;max-width:40ch}
+.qzpin{font-family:var(--f-mono);font-weight:700;font-size:clamp(3.4rem,14vw,6.5rem);letter-spacing:.2em;line-height:1;color:var(--chalk);background:rgba(255,255,255,.08);border-radius:16px;padding:10px 18px 10px 30px}
+.qzcount{font-size:1.05rem}.qzcount b{font-size:1.6rem;color:var(--chalk)}
+.qznames{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:760px;max-height:30vh;overflow:auto}
+.qznames span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px;font-size:.88rem;animation:qzpop .3s ease}
+.qznames em{opacity:.7}
+@keyframes qzpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.qzready{min-width:min(420px,100%);font-size:1.1rem}
+.qzcd{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 10px}
+.qzcd b{font-family:var(--f-display);font-size:6rem;line-height:1;color:var(--chalk)}
+.qzcd span{max-width:36ch;opacity:.9}
+.qzrun{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.qzq{font-family:var(--f-display);font-size:clamp(1.3rem,3.4vw,2.2rem);font-weight:700;max-width:30ch;line-height:1.25}
+.qztiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(900px,100%)}
+.qztile{display:flex;align-items:center;gap:14px;border-radius:14px;padding:16px 18px;min-height:86px;text-align:left;color:#fff;font-weight:700;font-size:clamp(1rem,2.2vw,1.35rem);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.qztile b{font-size:2.4rem;line-height:1;width:1.2em;text-align:center;flex:none}
+.qztile.ok{background:#1fa84f;outline:4px solid #fff;outline-offset:-4px}
+.qztile.no{background:#c7322a;opacity:.92}
+.qznote{font-size:.9rem;opacity:.9}
+.board:fullscreen .qztiles{width:min(1400px,96vw)}
+.board:fullscreen .qztile{min-height:16vh;font-size:2.2rem}
+.board:fullscreen .qztile b{font-size:4rem}
+.board:fullscreen .qzq{font-size:3rem}
+.board:fullscreen .qzpin{font-size:10rem}
+@media (max-width:560px){.qztile{padding:12px;min-height:70px;gap:8px}.qztile b{font-size:1.8rem}}
+/* điện thoại sinh viên */
+.joinrow{display:flex;gap:8px;align-items:stretch}
+.joinrow .codein{flex:1;min-width:0;letter-spacing:.35em}
+.quizfull{position:fixed;inset:0;z-index:80;background:#1d1240;color:#fff;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));gap:12px}
+.quizfull .qtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.quizfull .qno{font-family:var(--f-display);font-weight:700;font-size:1.1rem}
+.quizfull .qsec{min-width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:1.4rem;background:rgba(255,255,255,.15)}
+.quizfull .qsec.low{background:#c7322a}
+.quizfull .qmsg{text-align:center;font-size:1rem;min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.quizfull .qbtns{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
+.quizfull .qbtn{border:0;border-radius:18px;background:#f4f1ff;color:#1d1240;font-size:clamp(3rem,16vw,5.5rem);line-height:1;display:grid;place-items:center;box-shadow:0 5px 0 rgba(0,0,0,.35);touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.quizfull .qbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.quizfull .qbtn:disabled{opacity:.3}
+.quizfull .qbtn.pick{opacity:1;background:#f6c453;outline:4px solid #fff}
+.quizfull .qwait{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.quizfull .qwait b{font-family:var(--f-display);font-size:4.5rem;line-height:1;color:#f6c453}
+.quizfull .seqcells .cell{height:38px;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35)}
+.quizfull .seqcells .cell.pick{background:#f6c453;color:#1d1240;border-color:#fff}
+.quizfull .seqcells .cell.ok{background:#1fa84f;border-color:#fff}
+.quizfull .seqcells .cell.bad{background:#c7322a;border-color:#c7322a}
+.quizfull .seqlegend{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;font-size:.75rem;opacity:.85;margin-top:6px}
+.quizfull .seqlegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:rgba(255,255,255,.3)}
+.quizfull .seqlegend i.ok{background:#1fa84f}.quizfull .seqlegend i.bad{background:#c7322a}.quizfull .seqlegend i.pick{background:#f6c453}
 
 </style>
 </head>
@@ -656,7 +720,7 @@ body.noscroll{overflow:hidden}
         <label style="flex:1 1 110px" class="tmMan" hidden>Giờ:phút<input type="time" id="mTime"></label>
         <label style="flex:1 1 150px" class="tmMan" hidden>Ngày/tháng/năm<input type="date" id="mDate"></label>
       </div>
-        <button class="btn primary big" id="btnOpen">Mở điểm danh &amp; chiếu mã QR</button>
+        <button class="btn primary big" id="btnOpen">Mở phòng điểm danh</button>
       </div>
       <div class="board" id="board" hidden>
         <div id="boardLive" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
@@ -668,6 +732,25 @@ body.noscroll{overflow:hidden}
           <div class="meter"><i id="meter" style="width:100%"></i></div>
           <div style="font-size:.85rem;opacity:.85" id="boardNote">Mã đổi sau <b id="secs">5</b> giây · mỗi mã hiện <b id="codeSecTxt">5</b> giây · <b>quét đủ 2 mã liên tiếp</b> mới tính là điểm danh</div>
           <div class="livebadge" id="liveBadge" hidden>📷 Chỉ quét trực tiếp: mở trang Điểm danh → bấm <b>Quét mã</b>, giữ camera hướng vào màn hình đến khi báo xong</div>
+        </div>
+        <div class="qz" id="quizBoard" hidden>
+          <div class="cls" id="qzClass"></div>
+          <div class="qzlobby" id="qzLobby">
+            <div class="qzlbl">Mở trang <b>Điểm Danh Môn Học</b> trên điện thoại và nhập <b>mã phòng</b></div>
+            <div class="qzpin" id="qzPin">----</div>
+            <div class="qzcount"><b id="qzJoined">0</b> / <span id="qzTotal">0</span> sinh viên đã vào phòng</div>
+            <div class="qznames" id="qzNames"></div>
+            <button class="btn primary big qzready" id="btnReady">Sẵn sàng chưa? Bắt đầu ▶</button>
+          </div>
+          <div class="qzcd" id="qzCount" hidden><b id="qzCd">3</b><span>Chuẩn bị! Nhìn lên máy chiếu, bấm trên điện thoại đúng hình của ô <b class="g">màu xanh</b></span></div>
+          <div class="qzrun" id="qzRun" hidden>
+            <div class="seqno" id="qzNo"></div>
+            <div class="qzq" id="qzQ"></div>
+            <div class="qztiles" id="qzTiles"></div>
+            <div class="meter"><i id="qzMeter" style="width:100%"></i></div>
+            <div class="qznote">Còn <b id="qzSecs">5</b> giây · bấm trên điện thoại đúng <b>hình</b> của ô <b class="g">màu xanh</b> · đúng <b>2 câu liên tiếp</b> là điểm danh xong</div>
+          </div>
+          <div class="seqdone" id="qzDone" hidden><b id="qzDoneTitle">Đã hết câu hỏi</b><span>Sinh viên chưa đạt thì bấm Chạy thêm một lượt, các bạn đã đạt không cần làm lại.</span><button class="btn primary" id="btnMoreQuiz">Chạy thêm một lượt câu hỏi</button></div>
         </div>
       </div>
       <div class="row" id="liveCtl" hidden>
@@ -703,10 +786,10 @@ body.noscroll{overflow:hidden}
       <p class="hint">Bấm vào ô số liệu để lọc. Bấm vào một sinh viên để đánh dấu có mặt thủ công (ví dụ điện thoại hết pin) hoặc bỏ đánh dấu. Rê chuột hoặc giữ lâu để xem chi tiết.</p>
     </div>
     <div class="panel" id="seqPanel" style="grid-column:1/-1" hidden>
-    <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Theo dõi quét mã</h2><span class="hint" id="seqSummary"></span></div>
-    <div class="legend"><span><i style="background:var(--ok)"></i>Quét được, hợp lệ</span><span><i style="background:var(--warn)"></i>Quét được, cần xem</span><span><i style="background:var(--bad)"></i>Quét được nhưng bị từ chối</span><span><i style="background:var(--accent-soft);outline:2px solid var(--accent)"></i>Mã đang chiếu</span></div>
+    <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0" id="seqTitle">Theo dõi quét mã</h2><span class="hint" id="seqSummary"></span></div>
+    <div class="legend"><span><i style="background:var(--ok)"></i>Đúng / hợp lệ</span><span><i style="background:var(--warn)"></i>Cần xem</span><span><i style="background:var(--bad)"></i>Sai, lỡ câu hoặc bị từ chối</span><span><i style="background:var(--accent-soft);outline:2px solid var(--accent)"></i>Câu / mã đang chiếu</span></div>
     <div class="tablewrap seqwrap"><table class="seqtab"><thead id="seqHead"></thead><tbody id="seqRows"></tbody></table></div>
-    <p class="hint" style="margin:0">Mỗi dòng là một sinh viên, mỗi cột là một mã theo thứ tự chiếu. Điện thoại nhận được 2 mã liên tiếp (ví dụ mã 2 và 3) là điểm danh thành công.</p>
+    <p class="hint" style="margin:0">Mỗi dòng là một sinh viên, mỗi cột là một câu hỏi (hoặc mã QR) theo thứ tự chiếu. Đúng 2 câu liên tiếp (ví dụ câu 2 và 3) là điểm danh thành công.</p>
   </div>
 </section>
 
@@ -881,15 +964,15 @@ body.noscroll{overflow:hidden}
         <button class="btn" id="btnMyIp">Lấy IP mạng hiện tại</button>
       </div>
       <label class="check"><input type="checkbox" id="rReqSelfie" checked> Bắt buộc chụp ảnh khuôn mặt trực tiếp khi điểm danh</label>
-      <label hidden>Cách sinh viên nhập mã
-        <select id="rScan"><option value="any">Quét QR bằng camera điện thoại hoặc gõ 6 số</option><option value="live">Chỉ quét trực tiếp bằng camera trong trang điểm danh (chặn quét từ ảnh)</option></select>
+      <label>Cách điểm danh
+        <select id="rScan"><option value="quiz">Câu hỏi trên máy chiếu (khuyên dùng, không cần camera)</option><option value="qr">Quét mã QR trực tiếp bằng camera</option></select>
       </label>
-      <p class="hint" id="rScanHint" style="margin-top:-6px">Sinh viên chỉ điểm danh bằng cách quét QR trực tiếp trong trang điểm danh (không gõ số). QR không phải đường link nên camera thường hay Zalo quét ra cũng không dùng được.</p>
+      <p class="hint" id="rScanHint" style="margin-top:-6px">Câu hỏi trên máy chiếu: sinh viên nhập mã phòng, giảng viên bấm Sẵn sàng, mỗi câu hiện vài giây với 4 đáp án, đáp án đúng tô xanh trên máy chiếu. Điện thoại chỉ có 4 nút hình không chữ, nên ở ngoài lớp không biết bấm hình nào. Đúng 2 câu liên tiếp là điểm danh xong.</p>
       <div class="row">
-        <label style="flex:1 1 200px">Mỗi mã hiện trong
+        <label style="flex:1 1 200px">Mỗi câu hỏi / mã hiện trong
           <select id="rCodeSec"><option value="3">3 giây</option><option value="5">5 giây (mặc định)</option><option value="10">10 giây</option><option value="15">15 giây</option><option value="20">20 giây</option><option value="30">30 giây</option></select></label>
-        <label style="flex:1 1 200px">Mỗi lượt chiếu bao nhiêu mã
-          <select id="rCodeCount"><option value="3">3 mã</option><option value="5">5 mã</option><option value="8">8 mã</option><option value="10">10 mã (mặc định)</option><option value="15">15 mã</option><option value="20">20 mã</option><option value="0">Liên tục đến khi đóng</option></select></label>
+        <label style="flex:1 1 200px">Mỗi lượt bao nhiêu câu hỏi / mã
+          <select id="rCodeCount"><option value="3">3 câu</option><option value="5">5 câu</option><option value="8">8 câu</option><option value="10">10 câu (mặc định)</option><option value="15">15 câu</option><option value="20">20 câu</option><option value="0">Liên tục đến khi đóng (chỉ QR)</option></select></label>
         <label style="flex:1 1 200px">Số mã QR chiếu cùng lúc trên màn chiếu
           <select id="rQrCount"><option value="1">1 mã</option><option value="2">2 mã (lớp đông, quét từ 2 phía)</option><option value="3">3 mã</option><option value="4">4 mã (giảng đường lớn)</option></select></label>
       </div>
@@ -3298,7 +3381,11 @@ const Store = {
     window.addEventListener("storage",e=>{ if(e.key==="dd-db") this._emit(); });
     return "local";
   },
-  async _call(body){ const r=await fetch(this.sheet,{method:"POST",body:JSON.stringify(body),redirect:"follow"}); if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); },
+  async _call(body){ const t0=Date.now(); const r=await fetch(this.sheet,{method:"POST",body:JSON.stringify(body),redirect:"follow"}); if(!r.ok) throw new Error("HTTP "+r.status); const j=await r.json(), t1=Date.now();
+    // đồng bộ giờ với máy chủ Google: giữ lần đo có thời gian khứ hồi ngắn nhất (sai lệch nhỏ nhất)
+    if(typeof j.now==="number"){ const rtt=t1-t0; this.rtt*=1.01; if(rtt<=this.rtt){ this.rtt=rtt; this.off=j.now-(t0+t1)/2; } }
+    return j; },
+  off:0, rtt:1e9, now(){ return Date.now()+this.off; },
   /* ghi: gom các lệnh ghi gần nhau thành một lần gửi; màn hình cập nhật ngay, không chờ mạng */
   _local(path,val){ const ps=ddSegs(path), p=ps.join("/");
     this.subs.forEach(s=>{ const ws=ddSegs(s.path), w=ws.join("/");
@@ -3319,7 +3406,7 @@ const Store = {
     if(r.same||this.queue.length||this.flushing) return; this.ver=r.ver; subs.forEach((s,i)=>{ this._merge(s,r.res[i],r.ver); this._fire(s); }); },
   /* ghép kết quả từ Sheet: keys = mọi dòng của nhánh, rows = các dòng mới đổi */
   _merge(s,res,ver){ if(!s.rows) s.rows={}; const keep={}; res.keys.forEach(k=>{ keep[k]=1; }); for(const k in s.rows) if(!keep[k]) delete s.rows[k];
-    for(const k in res.rows) s.rows[k]=res.rows[k]; s.since=ver; s.val=this._asm(s.rows,s.path); },
+    for(const k in res.rows) if(res.rows[k]!==undefined&&!(res.rows[k]===null&&s.rows[k]!=null)) s.rows[k]=res.rows[k]; /* dòng đọc hụt thì giữ giá trị cũ */ s.since=ver; s.val=this._asm(s.rows,s.path); },
   _asm(rows,path){ const ps=ddSegs(path); let tree=null;
     for(const k in rows){ const ks=ddSegs(k); if(ks.length<ps.length) { tree=ddSetIn(tree,ks,rows[k]); continue; } if(!tree||typeof tree!=="object") tree={}; let o=tree; for(let i=0;i<ks.length-1;i++){ if(!o[ks[i]]||typeof o[ks[i]]!=="object") o[ks[i]]={}; o=o[ks[i]]; } o[ks.at(-1)]=rows[k]; }
     return ddClone(ddGetIn(tree,ps)); },
@@ -3345,6 +3432,17 @@ const Store = {
   },
   async get(path){ if(this.live){ await this._flush(); const r=await this._call({op:"get",paths:[path],since:[null]}); return this._asm(r.res[0].rows,path); } return this._get(this._tree(),path); }
 };
+
+/* ---------- điểm danh kiểu câu hỏi (máy chiếu hiện đáp án xanh, điện thoại bấm đúng hình) ---------- */
+const QUIZ_SHAPES=[{s:"▲",n:"Tam giác"},{s:"◆",n:"Thoi"},{s:"●",n:"Tròn"},{s:"■",n:"Vuông"}];
+const QUIZ_GRACE=3000;     // cho phép lượt trả lời tới máy chủ trễ tối đa 3 giây sau khi câu hết giờ (mạng chậm)
+const QUIZ_LEAD=4000;      // đếm ngược 4 giây trước câu đầu tiên
+const quizMs = s => Math.max(3,Math.min(60,+(s?.room?.codeSec)||5))*1000;
+const quizAt = (s,t) => (s.seqOff||0)+Math.floor((t-(s.t0||0))/quizMs(s));
+const quizStart = (s,i) => { let off=s.seqOff||0, t0=s.t0||0, b=-1;   // mỗi lượt chạy thêm có t0 riêng
+  for(const o in s.rounds||{}) if(+o<=i && +o>b){ b=+o; } if(b>=0){ off=b; t0=s.rounds[b]; } return t0+(i-off)*quizMs(s); };
+const quizLast = s => { const K=+s.room.codeCount||10; return (s.seqOff||0)+K-1; };
+const isQuiz = s => !!s && s.room?.scanMode==="quiz";
 
 </script>
 <script>
@@ -3633,13 +3731,13 @@ async function exportEdited(fmt){
 /* ===================== TRANG GIẢNG VIÊN ===================== */
 const STUDENT_PAGE = "sinh-vien.html";   // tên file trang sinh viên, đặt cùng thư mục
 const SAMPLE = [["2251010001","Nguyễn Văn An"],["2251010002","Trần Thị Bích"],["2251010003","Lê Hoàng Cường"],["2251010004","Phạm Minh Duy"],["2251010005","Võ Thị Hạnh"],["2251010006","Đặng Quốc Huy"],["2251010007","Bùi Ngọc Lan"],["2251010008","Huỳnh Tấn Phát"]];
-const DEFAULT_ROOM = {lat:null,lng:null,radius:30,maxAcc:40,reqIp:false,ips:[],reqSelfie:true,gpsPolicy:"reject",acceptSec:20,scanMode:"live",codeSec:5,qrCount:1,codeCount:10};
+const DEFAULT_ROOM = {lat:null,lng:null,radius:30,maxAcc:40,reqIp:false,ips:[],reqSelfie:true,gpsPolicy:"reject",acceptSec:20,scanMode:"quiz",codeSec:5,qrCount:1,codeCount:10};
 
 let classes = readJSON("dd-classes", null);
 if(!classes){ classes = {demo:{name:"Lập trình Web · CTK45 (mẫu)", roster:SAMPLE.map(([mssv,name])=>({mssv,name})), room:{...DEFAULT_ROOM}}}; }
 let secret = ls.get("dd-secret"); if(!secret){ secret=rid(24); ls.set("dd-secret",secret); }
 let accounts={}, requests={}, passwords=readJSON("dd-pass",{});
-let devices={}, session=null, checkins={}, results={}, firstSeen={}, rejects=[], seenBad={};
+let devices={}, session=null, checkins={}, results={}, firstSeen={}, rejects=[], seenBad={}, lobbyAck={}, lobbyOk={}, revSent={};
 const saveClasses = () => { ls.set("dd-classes", JSON.stringify(classes)); if(Store.live) Store.set("classes", classes).catch(()=>{}); };
 /* kiểu điểm danh & thời gian ghi nhận */
 const KIND_LABEL={dau:"Đầu giờ",giua:"Giữa giờ",cuoi:"Cuối giờ",tuy:"Tuỳ chọn"}, KIND_SHORT={dau:"Đầu",giua:"Giữa",cuoi:"Cuối",tuy:"TC"};
@@ -3738,7 +3836,7 @@ function renderPreview(){ const list=parseRoster($("cRoster").value), tb=$("rost
 function loadEditor(){
   const c=classes[$("classEdit").value]; if(!c){ ["roomClassName","editClsName"].forEach(i=>$(i).textContent="(chưa có lớp)"); $("cName").value=""; $("cRoster").value=""; renderPreview(); return; } const r={...DEFAULT_ROOM,...c.room};
   $("roomClassName").textContent=c.name; $("editClsName").textContent=c.name; $("cName").value=c.name; $("cRoster").value=rosterText(c.roster); $("rosterCount").textContent=c.roster.length+" sinh viên. Tải file lên để thay danh sách."; renderPreview();
-  $("rLat").value=r.lat??""; $("rLng").value=r.lng??""; $("rRadius").value=r.radius; $("rMaxAcc").value=r.maxAcc; $("rReqIp").checked=r.reqIp; $("rIps").value=(r.ips||[]).join(", "); $("rReqSelfie").checked=r.reqSelfie; $("rGps").value=r.gpsPolicy; $("rAccept").value=String(r.acceptSec); $("rScan").value=r.scanMode==="live"?"live":"any"; $("rCodeSec").value=String(r.codeSec||5); $("rQrCount").value=String(r.qrCount||1); $("rCodeCount").value=String(r.codeCount??10); codeHintTxt();
+  $("rLat").value=r.lat??""; $("rLng").value=r.lng??""; $("rRadius").value=r.radius; $("rMaxAcc").value=r.maxAcc; $("rReqIp").checked=r.reqIp; $("rIps").value=(r.ips||[]).join(", "); $("rReqSelfie").checked=r.reqSelfie; $("rGps").value=r.gpsPolicy; $("rAccept").value=String(r.acceptSec); $("rScan").value=r.scanMode==="qr"?"qr":"quiz"; $("rCodeSec").value=String(r.codeSec||5); $("rQrCount").value=String(r.qrCount||1); $("rCodeCount").value=String(r.codeCount??10); codeHintTxt();
 }
 $("classEdit").addEventListener("change",loadEditor);
 $("classPick").addEventListener("change",()=>{ ls.set("dd-class",$("classPick").value); fillMeta(); renderRoster(); });
@@ -3890,8 +3988,10 @@ $("btnOpen").addEventListener("click",async()=>{
   $("btnOpen").disabled=true; $("openInfo").textContent="Đang lấy vị trí máy giảng viên…";
   const center=await teacherCenter(c); $("btnOpen").disabled=false;
   if(center.error){ $("openInfo").textContent=center.error; return; }
-  const t0=Date.now(); const d={open:true,id:rid(6),classId:id,className:c.name,startedAt:t0,t0,seqOff:0,...meta,room:{...DEFAULT_ROOM,...c.room,...center,scanMode:"live"},roster};
-  rejects=[]; seenBad={}; firstSeen={};
+  const mode=c.room?.scanMode==="qr"?"live":"quiz";   // mặc định: câu hỏi trên máy chiếu; chọn QR thì quét trực tiếp
+  const t0=Store.now(); const d={open:true,id:rid(6),classId:id,className:c.name,startedAt:Date.now(),t0,seqOff:0,...meta,room:{...DEFAULT_ROOM,...c.room,...center,scanMode:mode},roster};
+  if(mode==="quiz"){ d.phase="lobby"; d.room.codeCount=+c.room?.codeCount||10; }
+  rejects=[]; seenBad={}; firstSeen={}; lobbyAck={}; revSent={};
   try{ await Store.set("session",d); await Store.set("history/"+d.id,{classId:id,className:c.name,startedAt:d.startedAt,subject:d.subject,kind:d.kind,kindLabel:d.kindLabel,at:d.at,timeMode:d.timeMode,roster}); }catch(e){ $("openInfo").textContent="Không mở được: "+(e.message||e.code||e); }
 });
 async function teacherCenter(c){ // tâm khoảng cách = vị trí máy giảng viên ngay lúc này
@@ -3914,8 +4014,9 @@ function renderBoard(){
   if(open&&$("gClass").value!==session.classId&&document.activeElement!==$("gClass")) $("gClass").title="Đang điểm danh lớp "+session.className+". Trang Điểm danh vẫn hiện lớp này đến khi đóng."; else $("gClass").title="";
   ["sjName","kindPick","kindCustom","timeMode","mTime","mDate"].forEach(i=>$(i).disabled=!!open);
   if(!open){ $("nowClock").textContent=fmtTime(Date.now())+" · "+ddmmyyyy(Date.now()); return; }
+  const quiz=isQuiz(session); $("quizBoard").hidden=!quiz; $("boardLive").hidden=quiz;   if(quiz) return renderQuiz();
   const ms=codeMsOf(session), n=Math.max(1,Math.min(4,+session.room.qrCount||1));
-  const now=Date.now(), idx=seqAt(session,now), K=+session.room.codeCount||0, last=seqLast(session);
+  const now=Store.now(), idx=seqAt(session,now), K=+session.room.codeCount||0, last=seqLast(session);
   const done=K>0&&idx>last; $("seqDone").hidden=!done; $("qr").hidden=done; $("code").style.visibility=done?"hidden":"";
   if(done){ $("seqDoneTitle").textContent="Đã chiếu hết "+(last+1)+" mã"; $("seqNo").textContent=""; $("meter").style.width="0%"; $("secs").textContent="0"; renderSeqGrid(); return; }
   const code=codeFor(secret,session.id,idx), left=ms-((now-(session.t0||0))%ms), sec=Math.ceil(left/1000);
@@ -3940,45 +4041,52 @@ const seqAt = (s,t) => (s.seqOff||0)+Math.floor((t-(s.t0||0))/codeMsOf(s));
 const seqLast = s => { const K=+s.room.codeCount||0; return K>0?(s.seqOff||0)+K-1:Infinity; };
 const seqEnd = (s,w) => (s.t0||0)+(w-(s.seqOff||0)+1)*codeMsOf(s);   // lúc mã w hết lượt chiếu
 let curSeq=-1;
-$("btnMoreCodes").addEventListener("click",async()=>{ if(!session||!session.open) return; const off=seqLast(session)+1; await Store.set("session",{...session,t0:Date.now(),seqOff:off}); });
+$("btnMoreCodes").addEventListener("click",async()=>{ if(!session||!session.open) return; const off=seqLast(session)+1; await Store.set("session",{...session,t0:Store.now(),seqOff:off}); });
 function renderSeqGrid(){
   const p=$("seqPanel"); if(!p) return; const s=session; p.hidden=!s;
   if(!s) return;
-  const K=+s.room.codeCount||0, now=Date.now(), cur=s.open?seqAt(s,now):-1, last=seqLast(s);
+  const quiz=isQuiz(s), now=Store.now(), K=quiz?(+s.room.codeCount||10):(+s.room.codeCount||0), last=quiz?quizLast(s):seqLast(s);
+  const cur=!s.open?-1:quiz?(s.phase==="run"&&now>=s.t0&&quizAt(s,now)<=last?quizAt(s,now):-1):seqAt(s,now);
+  $("seqTitle").textContent=quiz?"Theo dõi trả lời câu hỏi":"Theo dõi quét mã";
   const shown=K>0?Math.min(last,Math.max(cur,(s.seqOff||0)+K-1)):Math.max(cur,0);
   let cols=[...Array(shown+1).keys()];
   if(K===0&&cols.length>30){ const used=new Set(); Object.values(results).forEach(r=>(r.seq||[]).forEach(n=>used.add(n-1))); cols=cols.filter(i=>used.has(i)||i>=cur-2); }
   const hr=document.createElement("tr"); ["STT","MSSV","Họ tên"].forEach((x,i)=>{ const th=document.createElement("th"); th.textContent=x; th.className="sk"+i; hr.appendChild(th); });
-  cols.forEach(i=>{ const th=document.createElement("th"); th.textContent="Mã "+(i+1); th.className="sc"+(i===cur?" cur":""); hr.appendChild(th); });
+  cols.forEach(i=>{ const th=document.createElement("th"); th.textContent=(quiz?"Câu ":"Mã ")+(i+1); th.className="sc"+(i===cur?" cur":""); hr.appendChild(th); });
   const thr=document.createElement("th"); thr.textContent="Kết quả"; hr.appendChild(thr);
   $("seqHead").replaceChildren(hr);
   const tb=$("seqRows"), rows=[]; let nOk=0;
   Object.entries(s.roster).sort((a,b)=>(a[1].stt||0)-(b[1].stt||0)).forEach(([k,st])=>{
-    const r=results[k], seq=new Set(r?.seq||[]), tr=document.createElement("tr");
+    const r=results[k], seq=new Set(r?.seq||[]), tr=document.createElement("tr"), qv=quiz&&checkins[k]?quizVerdicts(k,checkins[k]):null;
     [st.stt||"",st.mssv,st.name].forEach((x,i)=>{ const td=document.createElement("td"); td.textContent=x; td.className="sk"+i+(i<2?" num":""); tr.appendChild(td); });
-    cols.forEach(i=>{ const td=document.createElement("td"); td.className="sc"+(i===cur?" cur":""); if(seq.has(i+1)){ const b=document.createElement("span"); b.className="dot "+(r.level||"ok"); b.textContent="✓"; b.title="Mã "+(i+1)+(r.t?" · "+fmtTime(r.t):""); td.appendChild(b); } tr.appendChild(td); });
+    cols.forEach(i=>{ const td=document.createElement("td"); td.className="sc"+(i===cur?" cur":"");
+      if(qv){ if(i in qv){ const b=document.createElement("span"); b.className="dot "+(qv[i]?(seq.has(i+1)?(r.level||"ok"):"ok"):"bad"); b.textContent=qv[i]?"✓":"✕"; b.title="Câu "+(i+1)+(qv[i]?": đúng":": sai hoặc quá giờ"); td.appendChild(b); } tr.appendChild(td); return; }
+      if(seq.has(i+1)){ const b=document.createElement("span"); b.className="dot "+(r.level||"ok"); b.textContent="✓"; b.title="Mã "+(i+1)+(r.t?" · "+fmtTime(r.t):""); td.appendChild(b); } tr.appendChild(td); });
     const res=document.createElement("td"); res.className="sres";
     if(!r){ res.textContent="Chưa quét"; res.style.color="var(--muted)"; }
-    else { const p=document.createElement("span"); p.className="pill "+(r.level==="ok"?"ok":r.level==="warn"?"warn":"bad"); p.textContent=r.manual?"GV xác nhận":r.level==="ok"?(r.seq?"Mã "+r.seq.join("–"):"Có mặt"):r.level==="warn"?"Cần xem":"Bị từ chối"; res.appendChild(p); if(r.level==="ok") nOk++; if(r.level!=="ok"&&r.reasons?.length) res.title=r.reasons.join(" · "); }
+    else { const p=document.createElement("span"); p.className="pill "+(r.level==="ok"?"ok":r.level==="warn"?"warn":"bad"); p.textContent=r.manual?"GV xác nhận":r.level==="ok"?(r.seq?(quiz?"Câu ":"Mã ")+r.seq.join("–"):"Có mặt"):r.level==="warn"?"Cần xem":"Bị từ chối"; res.appendChild(p); if(r.level==="ok") nOk++; if(r.level!=="ok"&&r.reasons?.length) res.title=r.reasons.join(" · "); }
     tr.appendChild(res); rows.push(tr); });
   tb.replaceChildren(...rows);
-  $("seqSummary").textContent=nOk+"/"+rows.length+" sinh viên đã điểm danh"+(K>0?" · lượt "+(last+1)+" mã":" · chiếu liên tục")+(cur>=0&&cur<=last?" · đang chiếu mã "+(cur+1):"");
+  $("seqSummary").textContent=nOk+"/"+rows.length+" sinh viên đã điểm danh"+(quiz?(s.phase==="run"?" · "+(last+1)+" câu":" · đang ở phòng chờ")+(cur>=0?" · đang hỏi câu "+(cur+1):""):(K>0?" · lượt "+(last+1)+" mã":" · chiếu liên tục")+(cur>=0&&cur<=last?" · đang chiếu mã "+(cur+1):""));
   const cell=p.querySelector("th.cur"); if(cell&&s.open){ const w=p.querySelector(".seqwrap"); const x=cell.offsetLeft-w.clientWidth/2; if(Math.abs(w.scrollLeft-x)>w.clientWidth/3) w.scrollLeft=Math.max(0,x); }
 }
 function codeHintTxt(){ const c=+$("rCodeSec").value||5, a=+$("rAccept").value||20;
+  if($("rScan").value!=="qr"){ const n=+$("rCodeCount").value||10; $("rCodeHint").textContent="Mỗi câu hiện "+c+" giây, một lượt "+n+" câu chạy khoảng "+Math.round(n*c/6)/10+" phút. Sinh viên lỡ 1 câu vẫn còn các câu sau; muốn dễ hơn cho lớp đông thì chọn 10 giây."; return; }
   $("rCodeHint").textContent="Sinh viên phải quét được 2 mã liên tiếp (thấy mã đổi) nên mỗi lượt quét mất khoảng "+c+" đến "+(2*c)+" giây."+(c>=20?" Mã hiện lâu thì quét chậm hơn nhưng dễ cho lớp đông.":"")+(a<c?" Lưu ý: thời gian dùng mã ("+a+" giây) ngắn hơn thời gian mỗi mã hiện, nên chọn ít nhất "+c+" giây.":""); }
-["rCodeSec","rAccept"].forEach(id=>$(id).addEventListener("change",codeHintTxt));
+["rCodeSec","rAccept","rScan","rCodeCount"].forEach(id=>$(id).addEventListener("change",codeHintTxt));
 
 /* ---------- chấm điểm danh ---------- */
 const LIVE_LAG_MS = 4000;   // chế độ quét trực tiếp: mã mới phải tới máy giảng viên trong 5 + 4 = 9 giây kể từ lúc hiện
 function judge(k,c){
   const room=session.room, reasons=[]; let level="ok";
   const bad=r=>{level="bad";reasons.push(r)}, warn=r=>{if(level==="ok")level="warn";reasons.push(r)};
-  const ms=codeMsOf(session), t=firstSeen[k+":"+c.at]||c.at, idx=Math.min(seqAt(session,t),seqLast(session)+Math.ceil((room.acceptSec||20)*1000/ms)); let seq=null;
+  const ms=codeMsOf(session); let t=firstSeen[k+":"+c.at]||c.at; const idx=Math.min(seqAt(session,t),seqLast(session)+Math.ceil((room.acceptSec||20)*1000/ms)); let seq=null;
   const back=Math.max(1,Math.ceil((room.acceptSec||20)*1000/ms)); let codeOk=false; for(let i=0;i<=back;i++) if(idx-i>=0&&idx-i<=seqLast(session)&&codeFor(secret,session.id,idx-i)===c.code) codeOk=true;
-  if(!codeOk) bad("Mã sai hoặc đã hết hạn");
+  if(isQuiz(session)){ const q=quizCheck(k,c); seq=q.seq||null; if(q.t) t=q.t; if(!q.ok) bad(q.reason); }
+  else if(!codeOk) bad("Mã sai hoặc đã hết hạn");
   // mọi cách nhập đều phải có 2 mã liên tiếp: mã trước (code2) đúng là mã của khung liền trước mã gửi
-  if(room.scanMode==="live" && c.via!=="live") bad("Không quét trực tiếp bằng camera (lớp chặn gõ mã, quét từ ảnh)");
+  if(isQuiz(session)){}
+  else if(room.scanMode==="live" && c.via!=="live") bad("Không quét trực tiếp bằng camera (lớp chặn gõ mã, quét từ ảnh)");
   else if(codeOk){
     let w=-1; for(let i=0;i<=back;i++) if(idx-i>=0&&codeFor(secret,session.id,idx-i)===c.code){ w=idx-i; break; }
     seq=[w+1]; if(c.code2&&w>0&&codeFor(secret,session.id,w-1)===c.code2) seq=[w,w+1];
@@ -4008,13 +4116,15 @@ function judge(k,c){
   return {level,reasons,t,dist:dist==null?null:Math.round(dist),seq};
 }
 async function onCheckins(v){
-  checkins=v||{}; const now=Date.now();
+  checkins=v||{}; const now=Store.now(), quiz=isQuiz(session);
   for(const [k,c] of Object.entries(checkins)){
     const fk=k+":"+c.at; if(!firstSeen[fk]) firstSeen[fk]=Math.abs(now-c.at)<60000?now:c.at;
+    if(quiz){ for(const i in c.ans||{}){ const f="a:"+k+":"+i; if(!firstSeen[f]) firstSeen[f]=now; } quizLobby(k,c); }   // Apps Script bản cũ (chưa ghi giờ máy chủ): dùng lúc máy giảng viên thấy câu trả lời
     const prev=results[k];
     if(prev && (prev.level==="ok"||prev.manual)) continue;            // đã hợp lệ thì giữ nguyên, không cho ghi đè
-    if(prev && prev.at===c.at) continue;                               // lượt này đã chấm
-    const j=judge(k,c); const r={level:j.level,reasons:j.reasons,t:j.t,dist:j.dist,at:c.at,selfie:c.selfie||null,seq:j.seq};
+    let sig=c.at; if(quiz){ const q=quizCheck(k,c); if(q.pending) continue; sig=c.at+":"+q.sig; }   // chưa đủ 2 câu đúng và lượt chưa hết: chờ tiếp
+    if(prev && (prev.sig??prev.at)===sig) continue;                    // lượt này đã chấm
+    const j=judge(k,c); const r={level:j.level,reasons:j.reasons,t:j.t,dist:j.dist,at:c.at,sig,selfie:c.selfie||null,seq:j.seq};
     results[k]=r;
     if(j.level==="bad" && !seenBad[fk]){ seenBad[fk]=1; rejects.unshift({mssv:c.mssv,name:session.roster[k]?.name||"(không có trong lớp)",t:j.t,reasons:j.reasons}); }
     Store.set("results/"+session.id+"/"+k,{level:r.level,reasons:r.reasons,t:r.t,dist:r.dist??null,seq:r.seq||null}).catch(()=>{});
@@ -4192,7 +4302,7 @@ let unCheckins=null;
   Store.watch("accounts",v=>{ accounts=v||{}; const first=!accountsLoaded; accountsLoaded=true; if(first) Object.values(classes).forEach(c=>ensureAccounts(c.roster)); renderAccounts(); });
   Store.watch("session",s=>{
     const changed = !session || !s || s.id!==session.id; session=s;
-    if(changed){ unCheckins?.(); results={}; checkins={}; if(s){ $("classPick").value=s.classId in classes? s.classId : $("classPick").value;
+    if(changed){ unCheckins?.(); results={}; checkins={}; lobbyOk={}; lobbyAck={}; qzCur=-1; qzNamesKey=""; if(s){ $("classPick").value=s.classId in classes? s.classId : $("classPick").value;
       Store.get("results/"+s.id).then(v=>{ if(v) for(const [k,r] of Object.entries(v)) if(!results[k]) results[k]={...r}; renderRoster(); });
       unCheckins=Store.watch("checkins/"+s.id,onCheckins); } }
     $("openInfo").textContent = s&&s.open ? "Mở lúc "+fmtTime(s.startedAt)+" · "+centerInfo(s)+(location.protocol==="file:"?" · đang mở từ file trên máy nên điện thoại không quét QR được, hãy đưa lên web":"") : "";
@@ -4206,6 +4316,84 @@ let unCheckins=null;
 document.addEventListener("click",e=>{ const im=e.target.closest(".av img, img.selfie"); if(!im) return; e.preventDefault(); e.stopPropagation();
   let ov=$("picOv"); if(!ov){ ov=document.createElement("div"); ov.id="picOv"; ov.className="picov"; ov.innerHTML='<figure><img alt="Ảnh khuôn mặt"><figcaption></figcaption></figure><button type="button" aria-label="Đóng">✕</button>'; document.body.appendChild(ov); ov.addEventListener("click",()=>{ ov.hidden=true; }); }
   ov.querySelector("img").src=im.src; ov.querySelector("figcaption").textContent=im.alt||im.closest("[title]")?.title||""; ov.hidden=false; },true);
+
+/* ===================== ĐIỂM DANH KIỂU CÂU HỎI =====================
+   Sinh viên vào phòng bằng mã phòng trên máy chiếu → giảng viên bấm Sẵn sàng → mỗi câu hiện 5 giây,
+   máy chiếu tô XANH đáp án đúng (3 đáp án còn lại đỏ), điện thoại chỉ có 4 nút hình (▲◆●■) xáo thứ tự,
+   không có chữ, nên ở nhà không biết bấm hình nào. Đúng 2 câu liên tiếp, đúng giờ là điểm danh xong. */
+const QUIZ_BANK=[
+  ["Bạn đang ở đâu?","Trong lớp học","Ở nhà","Quán cà phê","Trên xe buýt"],
+  ["Bạn có đang có mặt trong lớp không?","Có, mình đang ngồi trong lớp","Không, mình ở nhà","Mình đang trên đường","Mình nhờ bạn điểm danh"],
+  ["Hôm nay bạn có đi học không?","Có, mình đang ở lớp","Không, mình nghỉ","Mình đi trễ, chưa tới","Mình học online"],
+  ["Bạn có đang ở giảng đường không?","Có","Không","Mình ở ký túc xá","Mình ở thư viện"],
+  ["Giảng viên có đang ở trong lớp không?","Có, thầy/cô đang đứng lớp","Không có ai","Mình không biết","Lớp nghỉ"],
+  ["Bạn có đang được điểm danh không?","Có, mình đang tự điểm danh","Không","Bạn điểm danh hộ","Mình chỉ xem thử"],
+  ["Bạn có nhìn thấy máy chiếu không?","Có, ngay trước mặt","Không thấy","Bạn gửi ảnh cho mình","Xem qua video"],
+  ["Bạn đang làm gì?","Điểm danh trong lớp","Ngủ ở nhà","Đi chơi","Đi làm thêm"],
+  ["Ai đang bấm điện thoại này?","Chính mình","Bạn cùng lớp","Người nhà","Không biết"],
+  ["Bạn đang ngồi ở đâu?","Ghế trong giảng đường","Giường ở nhà","Quán ăn","Trên xe máy"],
+  ["Điện thoại này của ai?","Của mình","Của bạn mình","Mượn tạm","Của người khác"],
+  ["Bạn có nghe giảng viên nói không?","Có, nghe rõ","Không","Nghe qua điện thoại","Bạn kể lại"],
+  ["Hôm nay bạn đến lớp chưa?","Rồi, mình đang ở lớp","Chưa đến","Không đến","Lát nữa mới đến"],
+  ["Bạn có thấy các bạn cùng lớp xung quanh không?","Có, cả lớp đang ở đây","Không, mình ở một mình","Chỉ thấy qua mạng","Không rõ"],
+  ["Bạn có đang trong phòng học không?","Có","Không","Đang ở hành lang","Đang ở căn tin"],
+  ["Buổi học này đang diễn ra ở đâu?","Ngay lớp mình đang ngồi","Ở lớp khác","Trên mạng","Không biết"],
+  ["Bạn có cần ai điểm danh hộ không?","Không, mình tự điểm danh","Có","Nhờ bạn thân","Nhờ lớp trưởng"],
+  ["Bạn đang xem màn chiếu bằng cách nào?","Trực tiếp trong lớp","Qua ảnh chụp","Qua livestream","Không xem"],
+  ["Bạn có đang tham gia buổi học này không?","Có, mình đang ở đây","Không","Mình học buổi khác","Mình chưa vào"],
+  ["Bạn đã sẵn sàng học chưa?","Sẵn sàng, mình đang ở lớp","Chưa, mình ở nhà","Mình đang ngủ","Mình đang đi chơi"],
+  ["Bạn có đang cầm điện thoại của chính mình?","Đúng vậy","Không","Cầm hộ bạn","Mượn tạm"],
+  ["Hôm nay bạn có mặt chứ?","Có mặt","Vắng mặt","Vắng có phép","Đi trễ"],
+  ["Lớp hôm nay có đông không?","Đông, mình đang ngồi cùng các bạn","Mình không ở lớp","Mình đang ở nhà","Mình không biết"],
+  ["Bạn có đang ngồi trong lớp nghe giảng?","Có","Không","Đang trên đường tới","Đang ở nhà xem lại bài"]
+];
+const pinOf = sid => String(cyrb53(secret+":pin:"+sid)%9000+1000);          // mã phòng 4 số, chỉ máy giảng viên biết
+const qAns = (sid,i) => cyrb53(secret+":"+sid+":q"+i)%4;                     // hình đúng của câu i (0..3)
+function qItem(sid,i){ const L=QUIZ_BANK.length, b=QUIZ_BANK[(cyrb53(sid+":bank")%L+i*7)%L], c=qAns(sid,i), w=b.slice(2), a=[];
+  for(let p=0,j=0;p<4;p++) a.push(p===c?b[1]:w[j++]); return {q:b[0],a,c}; }
+function quizLobby(k,c){ if(!session) return; const ok=c.pin===pinOf(session.id), key=c.pin+":"+ok+":"+c.at;
+  lobbyOk[k]=ok; if(lobbyAck[k]===key) return; lobbyAck[k]=key;
+  Store.set("lobby/"+session.id+"/"+k,{ok,t:Store.now(),at:c.at}).catch(()=>{ lobbyAck[k]=null; }); }
+/* đánh giá từng câu: đúng hình và tới máy chủ trong thời gian câu đó hiện (+3 giây mạng chậm) */
+function quizVerdicts(k,c){ const s=session, ms=quizMs(s), v={};
+  for(const i in c?.ans||{}){ const a=c.ans[i], n=+i, st=quizStart(s,n), sat=a.sat!=null, t=sat?a.sat:(firstSeen["a:"+k+":"+i]||a.at);
+    v[n]= a.c===qAns(s.id,n) && t>=st-500 && t<=st+ms+(sat?QUIZ_GRACE:QUIZ_GRACE+4000); }
+  return v; }
+function quizCheck(k,c){ const s=session, ms=quizMs(s), v=quizVerdicts(k,c), n=Object.keys(c.ans||{}).length;
+  if(c.pin!==pinOf(s.id)) return s.open?{pending:true}:{ok:false,reason:"Sai mã phòng",sig:"pin"};
+  for(const i of Object.keys(v).map(Number).sort((a,b)=>a-b)) if(v[i]&&v[i+1]&&quizStart(s,i+1)-quizStart(s,i)===ms){ const a=c.ans[i+1]; return {ok:true,seq:[i+1,i+2],t:a.sat||firstSeen["a:"+k+":"+(i+1)]||a.at,sig:"ok"+i}; }
+  const over=s.phase==="run" && Store.now()>quizStart(s,quizLast(s))+ms+QUIZ_GRACE+1500;
+  if(!over && s.open) return {pending:true};
+  return {ok:false,reason:n?"Không trả lời đúng 2 câu liên tiếp đúng giờ":"Đã vào phòng nhưng không trả lời câu nào",sig:"end"+(s.seqOff||0)+":"+n}; }
+let qzCur=-1, qzNamesKey="", sweptRound="";
+function renderQuiz(){
+  const s=session, now=Store.now(), ms=quizMs(s), last=quizLast(s), off=s.seqOff||0;
+  const lobby=s.phase!=="run", i=quizAt(s,now), before=!lobby&&now<s.t0, done=!lobby&&!before&&i>last;
+  $("qzClass").textContent=s.className+" · "+metaLine(s);
+  $("qzLobby").hidden=!lobby; $("qzCount").hidden=!before; $("qzRun").hidden=lobby||before||done; $("qzDone").hidden=!done;
+  const joined=Object.keys(lobbyOk).filter(k=>lobbyOk[k]&&s.roster[k]);
+  if(lobby){
+    $("qzPin").textContent=pinOf(s.id); $("qzJoined").textContent=joined.length; $("qzTotal").textContent=Object.keys(s.roster).length;
+    const key=joined.join(","); if(key!==qzNamesKey){ qzNamesKey=key; const box=$("qzNames"); box.innerHTML="";
+      joined.slice(-60).forEach(k=>{ const e=document.createElement("span"); e.textContent=s.roster[k].name; box.appendChild(e); });
+      if(!joined.length){ const e=document.createElement("em"); e.textContent="Chưa có ai vào phòng"; box.appendChild(e); } }
+    $("btnReady").textContent=joined.length?"Sẵn sàng chưa? Bắt đầu ▶ ("+joined.length+" sinh viên)":"Sẵn sàng chưa? Bắt đầu ▶";
+  } else if(before){ $("qzCd").textContent=Math.max(1,Math.ceil((s.t0-now)/1000)); }
+  else if(!done){
+    const left=quizStart(s,i)+ms-now; $("qzNo").textContent="Câu "+(i-off+1)+" / "+(last-off+1); $("qzSecs").textContent=Math.max(0,Math.ceil(left/1000)); $("qzMeter").style.width=Math.max(0,left/ms*100)+"%";
+    if(qzCur!==i){ qzCur=i; const it=qItem(s.id,i); $("qzQ").textContent=it.q; const box=$("qzTiles"); box.innerHTML="";
+      it.a.forEach((txt,p)=>{ const d=document.createElement("div"); d.className="qztile "+(p===it.c?"ok":"no"); d.innerHTML='<b></b><span></span>'; d.querySelector("b").textContent=QUIZ_SHAPES[p].s; d.querySelector("span").textContent=txt; box.appendChild(d); });
+      renderSeqGrid(); }
+  } else { $("qzDoneTitle").textContent="Đã hết "+(last-off+1)+" câu hỏi · "+Object.values(results).filter(r=>r.level==="ok").length+" sinh viên điểm danh thành công"; }
+  if(lobby) return;
+  // công bố đáp án câu đã hết giờ (sau thời gian chờ mạng) để điện thoại tô ô xanh/đỏ; lúc này gửi lên cũng đã quá giờ
+  for(let j=off;j<=Math.min(last,i);j++){ const key=s.id+":"+j; if(now>quizStart(s,j)+ms+QUIZ_GRACE && s.rev?.[j]==null && !revSent[key]){ revSent[key]=1; Store.set("session/rev/"+j,qAns(s.id,j)).catch(()=>{ revSent[key]=0; }); } }
+  if(now>quizStart(s,last)+ms+QUIZ_GRACE+1500){ const rk=s.id+":"+off+":"+s.t0; if(sweptRound!==rk){ sweptRound=rk; onCheckins(checkins); } }
+}
+$("btnReady").addEventListener("click",async()=>{ if(!session||!session.open) return; const t0=Store.now()+QUIZ_LEAD, off=session.seqOff||0;
+  await Store.set("session",{...session,phase:"run",t0,seqOff:off,rounds:{...(session.rounds||{}),[off]:t0}}); });
+$("btnMoreQuiz").addEventListener("click",async()=>{ if(!session||!session.open) return; const t0=Store.now()+QUIZ_LEAD, off=quizLast(session)+1;
+  await Store.set("session",{...session,phase:"run",t0,seqOff:off,rounds:{...(session.rounds||{}),[off]:t0}}); });
 
 /* ===================== THEO DÕI & BÁO CÁO ===================== */
 let hist={}, allResults={}, rpCfg=readJSON("dd-rpcfg",{school:"",faculty:"",teacher:"",late:15,limit:20});
