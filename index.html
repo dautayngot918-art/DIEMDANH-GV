@@ -593,6 +593,10 @@ body.noscroll{overflow:hidden}
 .quizfull .seqlegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:rgba(255,255,255,.3)}
 .quizfull .seqlegend i.ok{background:#1fa84f}.quizfull .seqlegend i.bad{background:#c7322a}.quizfull .seqlegend i.pick{background:#f6c453}
 
+.svwarn{display:flex;flex-direction:column;gap:4px;background:#fde8e6;color:#8a1c14;border:2px solid #d4342b;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:.92rem}
+.svwarn b{font-size:1rem}
+.switchbar{display:flex;flex-direction:column;gap:8px;background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:12px}
+
 </style>
 </head>
 <body>
@@ -758,6 +762,7 @@ body.noscroll{overflow:hidden}
         <button class="btn" id="btnRecenter">Cập nhật vị trí máy giảng viên</button>
         <button class="btn danger" id="btnClose">Đóng điểm danh</button>
       </div>
+      <div class="switchbar" id="switchBar" hidden><span id="switchTxt"></span><button class="btn primary" id="btnSwitch">Đóng lớp đang mở và chuyển lớp</button></div>
       <span class="hint" id="openInfo"></span>
       <details class="cfg"><summary>Lượt bị từ chối <span class="pill" id="rejCount">0</span></summary><div>
         <ul class="log" id="rejects"><li class="hint">Chưa có.</li></ul>
@@ -3329,7 +3334,7 @@ var qrcode = function() {
    để máy giảng viên và điện thoại sinh viên dùng chung dữ liệu. Xem file HUONG-DAN-GOOGLE-SHEET.
    Để trống: chế độ thử, dữ liệu chỉ nằm trong trình duyệt của máy này. */
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzOLdroPgqX1sqaNq51lWA9xrRxjA3tzfHGlXIRJH8JASH-Wps-7Trqh_PVwuU6St73Cg/exec";
-const APP_VER = "Bản 28/10-4 · câu hỏi";   // hiện trên đầu trang để biết đang mở đúng file mới
+const APP_VER = "Bản 28/10-5 · câu hỏi";   // hiện trên đầu trang để biết đang mở đúng file mới
 const WINDOW_MS = 5000;          // mã đổi sau mỗi 5 giây
 
 const $ = id => document.getElementById(id);
@@ -3373,7 +3378,7 @@ const Store = {
   async init(){
     if(SHEET_URL){
       this.sheet=SHEET_URL;
-      try{ const r=await this._call({op:"get",paths:[],since:[]}); if(r.error) throw r; if(!Array.isArray(r.res)){ this.err="old"; return "error"; } this.live=true; this._poll();
+      try{ const r=await this._call({op:"get",paths:[],since:[]}); if(r.error) throw r; if(!Array.isArray(r.res)){ this.err="old"; return "error"; } this.live=true; this.sv=+r.sv||0; this._poll();
         addEventListener("beforeunload",e=>{ if(this.queue.length||this.flushing){ e.preventDefault(); e.returnValue=""; } });   // còn dữ liệu chưa lưu lên Sheet
         return "live"; }
       catch(e){ return "error"; }
@@ -3436,7 +3441,13 @@ const Store = {
     this.bc?.postMessage(1); this._emit();
   },
   async get(path){ if(this.live){ await this._flush(); const r=await this._call({op:"get",paths:[path],since:[null]}); return this._asm(r.res[0].rows,path); } return this._get(this._tree(),path); },
-  async getMany(paths){ if(this.live){ await this._flush(); const r=await this._call({op:"get",paths,since:paths.map(()=>null)}); return paths.map((p,i)=>this._asm(r.res[i].rows,p)); } return paths.map(p=>this._get(this._tree(),p)); }
+  sv:99, SV_NEED:5,
+  get oldServer(){ return this.live && this.sv<this.SV_NEED; },
+  /* Apps Script bản cũ có thể để một khoá nằm ở 2 dòng (dòng cũ sót lại): xoá đến khi đọc ra trống rồi mới ghi giá trị đúng */
+  async purge(path){ for(let i=0;i<6;i++){ await this.set(path,null); if(await this.get(path)==null) return true; } return false; },
+  rwAt:0, async rewrite(path,val){ this.rwAt=Date.now(); await this.purge(path); await this.set(path,val); this.rwAt=Date.now(); },
+  async getMany(paths){ if(this.oldServer){ const out=[]; for(const p of paths) out.push(await this.get(p)); return out; }   // bản cũ: đọc từng khoá cho chắc
+ if(this.live){ await this._flush(); const r=await this._call({op:"get",paths,since:paths.map(()=>null)}); return paths.map((p,i)=>this._asm(r.res[i].rows,p)); } return paths.map(p=>this._get(this._tree(),p)); }
 };
 
 /* ---------- điểm danh kiểu câu hỏi (máy chiếu hiện đáp án xanh, điện thoại bấm đúng hình) ---------- */
@@ -4017,7 +4028,8 @@ function studentURL(code){ const base=location.href.split("#")[0].split("?")[0];
 function renderBoard(){
   const open = session && session.open;
   $("prepBox").hidden=!!open; $("board").hidden=!open; $("liveCtl").hidden=!open; $("classPick").disabled=!!open;
-  if(open&&$("gClass").value!==session.classId&&document.activeElement!==$("gClass")) $("gClass").title="Đang điểm danh lớp "+session.className+". Trang Điểm danh vẫn hiện lớp này đến khi đóng."; else $("gClass").title="";
+  const other=open&&$("gClass").value!==session.classId&&classes[$("gClass").value]; $("gClass").title=other?"Đang điểm danh lớp "+session.className+".":"";
+  $("switchBar").hidden=!other; if(other){ $("switchTxt").textContent="Đang mở điểm danh lớp "+session.className+". Muốn điểm danh lớp "+classes[$("gClass").value].name+" thì đóng lớp đang mở trước."; $("btnSwitch").textContent="Đóng lớp "+session.className+" và chuyển sang lớp "+classes[$("gClass").value].name; }
   ["sjName","kindPick","kindCustom","timeMode","mTime","mDate"].forEach(i=>$(i).disabled=!!open);
   if(!open){ $("nowClock").textContent=fmtTime(Date.now())+" · "+ddmmyyyy(Date.now()); return; }
   const quiz=isQuiz(session); $("quizBoard").hidden=!quiz; $("boardLive").hidden=quiz;   if(quiz) return renderQuiz();
@@ -4209,16 +4221,29 @@ let accountsLoaded=false;
 async function ensureAccounts(roster){
   if(!accountsLoaded) return;
   for(const s of roster){ const k=keyOf(s.mssv);
-    if(!accounts[k] && Store.live){ const cur=await Store.get("accounts/"+k).catch(()=>undefined); if(cur!==null){ if(cur) accounts[k]=cur; continue; } }   // hỏi lại Sheet: chỉ tạo tài khoản khi chắc chắn chưa có, không bao giờ đè mật khẩu
+    if(!accounts[k] && Store.live){ let cur=await Store.get("accounts/"+k).catch(()=>undefined); if(cur===null){ await new Promise(r=>setTimeout(r,4000)); cur=await Store.get("accounts/"+k).catch(()=>undefined); } if(cur!==null){ if(cur) accounts[k]=cur; continue; } }   // hỏi lại Sheet: chỉ tạo tài khoản khi chắc chắn chưa có, không bao giờ đè mật khẩu
     if(!accounts[k]){ const pw=genPass(); passwords[k]=pw; accounts[k]={mssv:s.mssv,name:s.name,email:s.email||"",passHash:await hashPass(k,pw),mustChange:true,passBy:"teacher",passChangedAt:Date.now()}; await Store.set("accounts/"+k,accounts[k]).catch(()=>{}); }
     else { if(accounts[k].name!==s.name) await Store.set("accounts/"+k+"/name",s.name).catch(()=>{});
       if(s.email && accounts[k].email!==s.email) await Store.set("accounts/"+k+"/email",s.email).catch(()=>{}); }
   }
   savePw(); renderAccounts();
 }
-async function unbind(k){ const a=accounts[k]; if(!a) return; await Promise.all([...(a.deviceId?[Store.set("deviceOwners/"+a.deviceId,null)]:[]),...["deviceId","fp","ua","boundAt"].map(f=>Store.set("accounts/"+k+"/"+f,null))]); renderAccounts(); }   // gỡ trong một lần ghi
-async function resetPass(k){ const pw=genPass(); passwords[k]=pw; savePw(); const h=await hashPass(k,pw); await Promise.all([Store.set("accounts/"+k+"/passHash",h),Store.set("accounts/"+k+"/mustChange",true),Store.set("accounts/"+k+"/passBy","teacher"),Store.set("accounts/"+k+"/passChangedAt",Date.now())]); renderAccounts(); }
-async function approve(k){ const r=requests[k]; if(!r) return; const a=accounts[k]||{};
+/* các thao tác trên cùng một tài khoản chạy lần lượt (bấm Gỡ điện thoại rồi Cấp lại mật khẩu liền tay không đè nhau) */
+const acctLocks={}; function acctLock(k,fn){ const p=(acctLocks[k]||Promise.resolve()).then(fn,fn); acctLocks[k]=p.catch(()=>{}); return p; }
+function unbind(k){ return acctLock(k,()=>_unbind(k)); }
+async function _unbind(k){ const a=accounts[k]; if(!a) return;
+  if(Store.oldServer){ const cur=await Store.get("accounts/"+k)||a, o={...cur}; ["deviceId","fp","ua","boundAt"].forEach(f=>delete o[f]);
+    for(const d of new Set([a.deviceId,cur.deviceId].filter(Boolean))) await Store.purge("deviceOwners/"+d);
+    await Store.rewrite("accounts/"+k,o); accounts[k]=o; renderAccounts(); return; }
+  await Promise.all([...(a.deviceId?[Store.set("deviceOwners/"+a.deviceId,null)]:[]),...["deviceId","fp","ua","boundAt"].map(f=>Store.set("accounts/"+k+"/"+f,null))]); renderAccounts(); }   // gỡ trong một lần ghi
+function resetPass(k){ return acctLock(k,()=>_resetPass(k)); }
+async function _resetPass(k){ const pw=genPass(); passwords[k]=pw; savePw(); const h=await hashPass(k,pw);
+  if(Store.oldServer){ const cur=await Store.get("accounts/"+k)||accounts[k]||{}, o={...cur,passHash:h,mustChange:true,passBy:"teacher",passChangedAt:Date.now()}; await Store.rewrite("accounts/"+k,o); accounts[k]=o; renderAccounts(); return; }
+  await Promise.all([Store.set("accounts/"+k+"/passHash",h),Store.set("accounts/"+k+"/mustChange",true),Store.set("accounts/"+k+"/passBy","teacher"),Store.set("accounts/"+k+"/passChangedAt",Date.now())]); renderAccounts(); }
+function approve(k){ return acctLock(k,()=>_approve(k)); }
+async function _approve(k){ const r=requests[k]; if(!r) return; const a=accounts[k]||{};
+  if(Store.oldServer){ const cur=await Store.get("accounts/"+k)||a; if(cur.deviceId&&cur.deviceId!==r.deviceId) await Store.purge("deviceOwners/"+cur.deviceId);
+    const o={...cur,deviceId:r.deviceId,fp:r.fp||null,ua:r.ua||"",boundAt:Date.now()}; await Store.rewrite("accounts/"+k,o); await Store.rewrite("deviceOwners/"+r.deviceId,k); await Store.purge("requests/"+k); return; }
   await Promise.all([...(a.deviceId&&a.deviceId!==r.deviceId?[Store.set("deviceOwners/"+a.deviceId,null)]:[]),Store.set("accounts/"+k+"/deviceId",r.deviceId),Store.set("accounts/"+k+"/fp",r.fp||null),Store.set("accounts/"+k+"/ua",r.ua||""),Store.set("accounts/"+k+"/boundAt",Date.now()),
     Store.set("deviceOwners/"+r.deviceId,k),Store.set("requests/"+k,null)]); }   // đổi máy trong một lần ghi
 function cell(tr,text,cls){ const td=document.createElement("td"); td.textContent=text; if(cls) td.className=cls; tr.appendChild(td); return td; }
@@ -4301,6 +4326,7 @@ let unCheckins=null;
   storeReadyRes(mode);
   $("mode").textContent = mode==="live"?"Đang chạy thật · đồng bộ Google Sheet":mode==="error"?(Store.err==="old"?"Mã Apps Script là bản cũ · cần cập nhật":"Lỗi kết nối Google Sheet · kiểm tra địa chỉ"):"Chế độ thử · chỉ trên máy này"; $("mode").textContent+=" · "+APP_VER;
   if(mode==="live") $("mode").classList.add("live");
+  if(Store.oldServer){ const w=document.createElement("div"); w.className="svwarn"; w.innerHTML='<b>⚠ Google Sheet đang chạy mã Apps Script CŨ</b><span>Gỡ điện thoại, khoá máy mới và đổi mật khẩu có thể bị quay lại dữ liệu cũ. Mở Apps Script, dán toàn bộ file Code-AppsScript.txt mới, bấm Lưu, rồi Triển khai › Quản lý triển khai › bấm ✏️ ở bản đang dùng › Phiên bản: <b>Phiên bản mới</b> › Triển khai. Không chọn "Tạo bản triển khai mới" (sẽ ra địa chỉ khác). Xong tải lại trang này, dòng cảnh báo sẽ mất.</span>'; document.querySelector(".wrap")?.prepend(w); $("mode").textContent+=" · Apps Script cũ"; }
   Store.watch("devices",v=>{ devices=v||{}; renderRoster(); });
   Store.watch("settings",v=>{ settings=v||{}; fillSettings(); });
   Store.watch("history",v=>{ hist=v||{}; rpSoon(); renderClassList(); });
@@ -4308,6 +4334,7 @@ let unCheckins=null;
   Store.watch("requests",v=>{ requests=v||{}; renderAccounts(); });
   Store.watch("accounts",v=>{ accounts=v||{}; const first=!accountsLoaded; accountsLoaded=true; if(first) Object.values(classes).forEach(c=>ensureAccounts(c.roster)); renderAccounts(); });
   Store.watch("session",s=>{
+    if(s&&s.open&&Date.now()-(s.startedAt||0)>6*3600e3){ const t=Date.now(); Store.set("session",{...s,open:false,closedAt:t}).catch(()=>{}); Store.set("history/"+s.id+"/closedAt",t).catch(()=>{}); return; }   // buổi mở quá 6 giờ (quên đóng): tự đóng
     if(s&&s.open&&!isQuiz(s)){ Store.set("session",{...s,room:{...s.room,scanMode:"quiz",codeCount:+s.room.codeCount||10},phase:"lobby",t0:Store.now(),seqOff:0}).catch(()=>{}); return; }   // phòng mở bằng bản cũ (quét QR): chuyển sang câu hỏi
     const changed = !session || !s || s.id!==session.id; session=s;
     if(changed){ unCheckins?.(); results={}; checkins={}; lobbyOk={}; lobbyAck={}; qzCur=-1; qzNamesKey=""; if(s){ $("classPick").value=s.classId in classes? s.classId : $("classPick").value;
@@ -4402,6 +4429,10 @@ $("btnReady").addEventListener("click",async()=>{ if(!session||!session.open) re
   await Store.set("session",{...session,phase:"run",t0,seqOff:off,rounds:{...(session.rounds||{}),[off]:t0}}); });
 $("btnMoreQuiz").addEventListener("click",async()=>{ if(!session||!session.open) return; const t0=Store.now()+QUIZ_LEAD, off=quizLast(session)+1;
   await Store.set("session",{...session,phase:"run",t0,seqOff:off,rounds:{...(session.rounds||{}),[off]:t0}}); });
+
+$("btnSwitch").addEventListener("click",async()=>{ const v=$("gClass").value; if(!session||!session.open) return; const t=Date.now();
+  await Store.set("session",{...session,open:false,closedAt:t}); await Store.set("history/"+session.id+"/closedAt",t).catch(()=>{});
+  $("classPick").disabled=false; $("classPick").value=v; ls.set("dd-class",v); fillMeta(); renderRoster(); renderBoard(); });
 
 /* ===================== THEO DÕI & BÁO CÁO ===================== */
 let hist={}, allResults={}, rpCfg=readJSON("dd-rpcfg",{school:"",faculty:"",teacher:"",late:15,limit:20});
