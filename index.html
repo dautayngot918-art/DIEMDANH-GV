@@ -964,10 +964,10 @@ body.noscroll{overflow:hidden}
         <button class="btn" id="btnMyIp">Lấy IP mạng hiện tại</button>
       </div>
       <label class="check"><input type="checkbox" id="rReqSelfie" checked> Bắt buộc chụp ảnh khuôn mặt trực tiếp khi điểm danh</label>
-      <label>Cách điểm danh
+      <label hidden>Cách điểm danh
         <select id="rScan"><option value="quiz">Câu hỏi trên máy chiếu (khuyên dùng, không cần camera)</option><option value="qr">Quét mã QR trực tiếp bằng camera</option></select>
       </label>
-      <p class="hint" id="rScanHint" style="margin-top:-6px">Câu hỏi trên máy chiếu: sinh viên nhập mã phòng, giảng viên bấm Sẵn sàng, mỗi câu hiện vài giây với 4 đáp án, đáp án đúng tô xanh trên máy chiếu. Điện thoại chỉ có 4 nút hình không chữ, nên ở ngoài lớp không biết bấm hình nào. Đúng 2 câu liên tiếp là điểm danh xong.</p>
+      <p class="hint" id="rScanHint" style="margin-top:-6px">Cách điểm danh: câu hỏi trên máy chiếu (không dùng camera quét mã). sinh viên nhập mã phòng, giảng viên bấm Sẵn sàng, mỗi câu hiện vài giây với 4 đáp án, đáp án đúng tô xanh trên máy chiếu. Điện thoại chỉ có 4 nút hình không chữ, nên ở ngoài lớp không biết bấm hình nào. Đúng 2 câu liên tiếp là điểm danh xong.</p>
       <div class="row">
         <label style="flex:1 1 200px">Mỗi câu hỏi / mã hiện trong
           <select id="rCodeSec"><option value="3">3 giây</option><option value="5">5 giây (mặc định)</option><option value="10">10 giây</option><option value="15">15 giây</option><option value="20">20 giây</option><option value="30">30 giây</option></select></label>
@@ -3329,6 +3329,7 @@ var qrcode = function() {
    để máy giảng viên và điện thoại sinh viên dùng chung dữ liệu. Xem file HUONG-DAN-GOOGLE-SHEET.
    Để trống: chế độ thử, dữ liệu chỉ nằm trong trình duyệt của máy này. */
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzOLdroPgqX1sqaNq51lWA9xrRxjA3tzfHGlXIRJH8JASH-Wps-7Trqh_PVwuU6St73Cg/exec";
+const APP_VER = "Bản 28/10 · câu hỏi";   // hiện trên đầu trang để biết đang mở đúng file mới
 const WINDOW_MS = 5000;          // mã đổi sau mỗi 5 giây
 
 const $ = id => document.getElementById(id);
@@ -3988,7 +3989,7 @@ $("btnOpen").addEventListener("click",async()=>{
   $("btnOpen").disabled=true; $("openInfo").textContent="Đang lấy vị trí máy giảng viên…";
   const center=await teacherCenter(c); $("btnOpen").disabled=false;
   if(center.error){ $("openInfo").textContent=center.error; return; }
-  const mode=c.room?.scanMode==="qr"?"live":"quiz";   // mặc định: câu hỏi trên máy chiếu; chọn QR thì quét trực tiếp
+  const mode="quiz";   // chỉ dùng câu hỏi trên máy chiếu, đã bỏ quét QR
   const t0=Store.now(); const d={open:true,id:rid(6),classId:id,className:c.name,startedAt:Date.now(),t0,seqOff:0,...meta,room:{...DEFAULT_ROOM,...c.room,...center,scanMode:mode},roster};
   if(mode==="quiz"){ d.phase="lobby"; d.room.codeCount=+c.room?.codeCount||10; }
   rejects=[]; seenBad={}; firstSeen={}; lobbyAck={}; revSent={};
@@ -4292,7 +4293,7 @@ let unCheckins=null;
     else saveClasses();
   }catch(e){} }
   storeReadyRes(mode);
-  $("mode").textContent = mode==="live"?"Đang chạy thật · đồng bộ Google Sheet":mode==="error"?(Store.err==="old"?"Mã Apps Script là bản cũ · cần cập nhật":"Lỗi kết nối Google Sheet · kiểm tra địa chỉ"):"Chế độ thử · chỉ trên máy này";
+  $("mode").textContent = mode==="live"?"Đang chạy thật · đồng bộ Google Sheet":mode==="error"?(Store.err==="old"?"Mã Apps Script là bản cũ · cần cập nhật":"Lỗi kết nối Google Sheet · kiểm tra địa chỉ"):"Chế độ thử · chỉ trên máy này"; $("mode").textContent+=" · "+APP_VER;
   if(mode==="live") $("mode").classList.add("live");
   Store.watch("devices",v=>{ devices=v||{}; renderRoster(); });
   Store.watch("settings",v=>{ settings=v||{}; fillSettings(); });
@@ -4301,6 +4302,7 @@ let unCheckins=null;
   Store.watch("requests",v=>{ requests=v||{}; renderAccounts(); });
   Store.watch("accounts",v=>{ accounts=v||{}; const first=!accountsLoaded; accountsLoaded=true; if(first) Object.values(classes).forEach(c=>ensureAccounts(c.roster)); renderAccounts(); });
   Store.watch("session",s=>{
+    if(s&&s.open&&!isQuiz(s)){ Store.set("session",{...s,room:{...s.room,scanMode:"quiz",codeCount:+s.room.codeCount||10},phase:"lobby",t0:Store.now(),seqOff:0}).catch(()=>{}); return; }   // phòng mở bằng bản cũ (quét QR): chuyển sang câu hỏi
     const changed = !session || !s || s.id!==session.id; session=s;
     if(changed){ unCheckins?.(); results={}; checkins={}; lobbyOk={}; lobbyAck={}; qzCur=-1; qzNamesKey=""; if(s){ $("classPick").value=s.classId in classes? s.classId : $("classPick").value;
       Store.get("results/"+s.id).then(v=>{ if(v) for(const [k,r] of Object.entries(v)) if(!results[k]) results[k]={...r}; renderRoster(); });
